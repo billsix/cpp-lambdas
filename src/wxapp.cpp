@@ -1,11 +1,6 @@
 
 #include "wx/wx.h"
 
-class MyApp : public wxApp
-{
-public:
-  virtual bool OnInit();
-};
 
 class MyFrame: public wxFrame {
 public:
@@ -20,18 +15,6 @@ private:
 
   DECLARE_EVENT_TABLE()
 };
-
-
-bool MyApp::OnInit(){
-  MyFrame * frame = new MyFrame(wxT("Minimal App"));
-  frame->Show(true);
-  return true;
-}
-
-BEGIN_EVENT_TABLE(MyFrame, wxFrame)
-  EVT_MENU(wxID_ABOUT, MyFrame::OnAbout)
-  EVT_MENU(wxID_EXIT, MyFrame::OnQuit)
-END_EVENT_TABLE()
 
 void MyFrame::OnAbout(wxCommandEvent& e){
   numberOfAboutClicks++;
@@ -74,6 +57,24 @@ MyFrame::MyFrame(const wxString& title)
 
   numberOfAboutClicks = 0;
 
+}
+
+BEGIN_EVENT_TABLE(MyFrame, wxFrame)
+  EVT_MENU(wxID_ABOUT, MyFrame::OnAbout)
+  EVT_MENU(wxID_EXIT, MyFrame::OnQuit)
+END_EVENT_TABLE()
+
+
+class MyApp : public wxApp
+{
+public:
+  virtual bool OnInit();
+};
+
+bool MyApp::OnInit(){
+  MyFrame * frame = new MyFrame(wxT("Minimal App"));
+  frame->Show(true);
+  return true;
 }
 
 

@@ -8,7 +8,7 @@ AM_INIT_AUTOMAKE()
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_INSTALL
-AC_CONFIG_FILES([Makefile src/Makefile ])
+AC_CONFIG_FILES([Makefile src/Makefile presentation/Makefile])
 
 
 CXXFLAGS+=" $(wx-config --cflags) --std=c++14 "

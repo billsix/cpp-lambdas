@@ -1,0 +1,447 @@
+Lambdas in C++
+==============
+:author:    William Emerison Six
+:copyright: William Emerison Six 2017
+:backend:   slidy
+:max-width: 45em
+:data-uri:
+:icons:
+
+
+Lambdas
+-------
+
+* Lambdas are the best feature ever introduced in C++
+  - Lexically-scoped lambdas were introduced in
+    ** Lambda calculus (~1930, Alonzo Church)
+    ** Scheme (lambda papers, 1975–1980, Dr. Guy L. Steele and Dr. Gerald Jay Sussman)
+    ** Smalltalk-80 (1980)
+    ** Haskell (1990)
+    ** Java, via anonymous inner classes (sometime after '95)
+    ** C# (November 2005)
+* Deferred Evaluation
+* Minimize Scope
+
+
+Command Line Application #1
+---------------------------
+
+* Read input from command line
+* If input starts with 'q', quit
+* Otherwise, print the number of lines entered
+* Repeat
+* This is called an event-loop
+
+Source
+------
+
+....
+int main(int argc, char* argv[])
+{
+  int count = 0;
+  char buf[1000];
+  // the code to read a line, and to test may be evaluted
+  // 1 or more times
+  while (fgets(buf, 1000, stdin),'q' != buf[0])
+    {
+      // the body of the while loop may be executed 0,1,
+      // or more times
+      count++;
+      printf("Hit enter  %d times\n", count);
+    }
+  return 0;
+}
+....
+
+Command Line Application #2
+---------------------------
+
+* But what if your language didn't provide ''while'' loops?
+* You'd need gotos
+
+Source
+------
+
+....
+int main(int argc, char* argv[])
+{
+  int count = 0;
+  char buf[1000];
+ loopBegin:
+  fgets(buf, 1000, stdin);
+  // JE means JUMP-IF-EQUAL.
+  JE('q', buf[0], exit);
+  count++;
+  printf("Hit enter  %d times\n", count);
+  goto loopBegin;
+ exit:
+  return 0;
+}
+....
+
+Command Line Application #3
+---------------------------
+
+* But gotos are EVIL
+* Well, saying "gotos are evil" is a simple phrase, like instructions given
+  to a child which are 90% correct, but the phrase is too simplistic and inarticulate.
+* Gotos
+  - require the programmer to remember the names of sections of code,
+    where names shouldn't be required.
+  - obfuscate common patterns of control flow.  In contrast, names like "for",
+    "while", and "do-while" describe a pattern of control-flow which are instantly
+    recognizable
+  - are not evil if they can be used by the programmer to create their own control-flow
+    structures.
+* If a language has lambdas and gotos, a programmer can create
+  their own control structures.
+
+Source Pt 1
+-----------
+
+....
+int main(int argc, char* argv[])
+{
+  int count = 0;
+
+  // the body of a lambda may be evaluated 0,1, or more times
+  lambdaWhile([&](){
+      // notice that the scope of buf can be lessened
+      char buf[1000];
+      fgets(buf, 1000, stdin);
+      return 'q' != buf[0];
+    },
+    [&](){
+      count++;
+      printf("Hit enter  %d times\n", count);
+    });
+
+}
+....
+
+
+Source Pt 2
+-----------
+
+....
+void lambdaWhile(std::function<bool()> predicate,
+                 std::function<void()> block)
+{
+ loopBegin:
+  // test to see if the predicate (i.e., a procedure which
+  // evaluates to true of false) is true
+  JE(false,predicate(), exit);  /* if it's false, end the loop
+                                   by going to exit */
+  block();   // otherwise, evaluate the block
+  goto loopBegin; // and then repeat
+ exit:
+  return;
+}
+....
+
+
+Straw-man Counter Arguments
+---------------------------
+
+* But Eric Stancliff, the villian of this story, says "Why would I want to
+  create the definition of a while loop myself, when the language already
+  provides it for me?"
+  - Fair enough.  The demonstrated while loop is simplistic an unperformant,
+    and should never be used in real life.
+* But a simple rephrasing of that argument sounds silly
+  - "I want to prevent programmers from creating their own
+    customized control structures.  That's the job for compiler writers, who know
+    which control-structures I need.  I'm not a smart man, Bill."
+
+
+GUIs
+----
+
+* Let's make the example more modern by creating a graphical user interface
+  instead of a command line application.
+* Most frameworks for graphical user interfaces require ceding control
+  of the event loop.
+  - The programmer creates a bunch of widgets, define what happens on events
+    such as mouse clicks, and then call "qapplication.exec()", never to
+    explictly regain control.
+
+
+GUI Example #1
+--------------
+
+* Create a wxWidgets program which
+  - Has a menubar
+    ** File Menu
+      *** Quit MenuItem
+         **** When clicked, should close the application
+    ** Help Menu
+      *** About MenuItem
+         **** When clicked, should display the number of times
+              this MenuItem was clicked
+
+
+GUI Example #1 Source
+---------------------
+
+* wxFrame is the "Window" class in wxWidgets
+* It will have
+  - a title
+  - the number of times that "About" has been clicked
+  - Callbacks for when
+    ** The user wants to quit
+    ** The user clicks "About"
+
+....
+class MyFrame: public wxFrame {
+public:
+  MyFrame(const wxString& title);
+
+  void OnQuit(wxCommandEvent& e);
+  void OnAbout(wxCommandEvent& e);
+
+private:
+
+  int numberOfAboutClicks;
+
+  DECLARE_EVENT_TABLE()
+};
+....
+
+
+GUI Example #1 Source
+---------------------
+
+* When "About" is clicked
+  - increment the instance variable
+  - Display a message box which says how many times this has been clicked
+* When "Close" is clicked
+  - Close the window.
+....
+void MyFrame::OnAbout(wxCommandEvent& e){
+  numberOfAboutClicks++;
+
+  wxString msg;
+  msg.Printf(wxT("Hello, welcome to %s, clicked %d times"),
+             wxVERSION_STRING,
+             numberOfAboutClicks);
+  wxMessageBox(msg,
+	       wxT("About Minimal"),
+	       wxOK | wxICON_INFORMATION,
+	       this);
+}
+
+void MyFrame::OnQuit(wxCommandEvent& e){
+  Close();
+}
+....
+
+
+GUI Example #1 Source
+---------------------
+
+* Create the menubar and menus
+* Initialize the number of clicks to 0
+* Register the callbacks to be called upon various signals
+
+....
+MyFrame::MyFrame(const wxString& title)
+  :wxFrame(NULL, wxID_ANY, title){
+
+  wxMenu * fileMenu = new wxMenu();
+  wxMenu * helpMenu = new wxMenu();
+
+  fileMenu->Append(wxID_EXIT,
+		   wxT("E&xit"),
+		   wxT("Quit"));
+
+  helpMenu->Append(wxID_ABOUT,
+		   wxT("&About"),
+		   wxT("Show About Dialog"));
+
+  wxMenuBar * menuBar = new wxMenuBar();
+  menuBar->Append(fileMenu, wxT("&File"));
+  menuBar->Append(helpMenu, wxT("&Help"));
+
+  SetMenuBar(menuBar);
+  CreateStatusBar(1);
+  SetStatusText(wxT("Welcome"));
+
+  numberOfAboutClicks = 0;
+}
+BEGIN_EVENT_TABLE(MyFrame, wxFrame)
+  EVT_MENU(wxID_ABOUT, MyFrame::OnAbout)
+  EVT_MENU(wxID_EXIT, MyFrame::OnQuit)
+END_EVENT_TABLE()
+....
+
+GUI Example #1 Source
+---------------------
+
+....
+class MyApp : public wxApp
+{
+public:
+  virtual bool OnInit();
+};
+
+bool MyApp::OnInit(){
+  MyFrame * frame = new MyFrame(wxT("Minimal App"));
+  frame->Show(true);
+  return true;
+}
+
+
+DECLARE_APP(MyApp)
+IMPLEMENT_APP(MyApp)
+....
+
+GUI Example #2
+--------------
+
+* Why does the "MyFrame" class keep track of the number of clicks?
+  - The "About" button should keep track of it.
+* The "MyFrame" class handles the callbacks.  Should that be necessary?
+* The subclass serves little purpose.
+  - So let's get rid of it.
+
+GUI Example #2 Source
+---------------------
+
+* Declare the app.
+....
+class MyApp : public wxApp
+{
+public:
+  virtual bool OnInit();
+};
+....
+
+
+GUI Example #2 Source
+---------------------
+
+* Create a class to handle the "Close" callback
+* Although "frame" is a variable, this will only be used in one context
+* Creating a constructor and overidding the "apply" operator makes this
+  class a "Functor".
+....
+// defer closing the frame
+class CloseFunctor
+{
+public:
+  wxFrame * frame;
+
+  CloseFunctor(wxFrame *frame)
+  {
+    this->frame = frame;
+  }
+
+  void operator() (wxCommandEvent& event){
+    frame->Close();
+    delete frame;
+  }
+};
+....
+
+GUI Example #2 Source
+---------------------
+
+* Create a class to handle the "About" callback
+* Although "frame" and "numberOfAboutClicks" are variables, they will only be used in one context
+
+....
+// defer uppdating the number of clicks
+class AboutFunctor
+{
+public:
+  wxFrame * frame;
+  int numberOfAboutClicks;
+
+  AboutFunctor(wxFrame *frame, int numberOfAboutClicks)
+  {
+    this->frame = frame;
+    this->numberOfAboutClicks = numberOfAboutClicks;
+  }
+
+  void operator() (wxCommandEvent& event){
+    numberOfAboutClicks++;
+    wxString msg;{
+      msg.Printf(wxT("Hello, welcome to %s, clicked %d times"),
+                 wxVERSION_STRING,
+                 numberOfAboutClicks);
+    }
+    wxMessageBox(msg,
+                 wxT("About Minimal"),
+                 wxOK | wxICON_INFORMATION,
+                 frame);
+  }
+
+};
+....
+
+GUI Example #2 Source
+---------------------
+
+* Create the widget hierarchy
+* The scope for "numberOfAboutClicks" is greatly diminished
+  - Global variables aren't evil, the lack of locality is.
+
+....
+bool MyApp::OnInit(){
+  auto * frame = new wxFrame(nullptr,
+			     wxID_ANY,
+			     wxT("Minimal App"));
+
+  auto * menuBar = new wxMenuBar();{
+    auto * fileMenu = new wxMenu();{
+      fileMenu->Append(wxID_EXIT,
+		       wxT("E&xit"),
+		       wxT("Quit"));
+      frame->Bind(wxEVT_COMMAND_MENU_SELECTED,
+                  CloseFunctor(frame),
+		  wxID_EXIT);
+      menuBar->Append(fileMenu, wxT("&File"));
+    }
+    auto * helpMenu = new wxMenu();{
+      int numberOfAboutClicks = 0;
+      helpMenu->Append(wxID_ABOUT,
+		       wxT("&About"),
+		       wxT("Show About Dialog"));
+      frame->Bind(wxEVT_COMMAND_MENU_SELECTED,
+                  AboutFunctor(frame,numberOfAboutClicks),
+		  wxID_ABOUT);
+      menuBar->Append(helpMenu, wxT("&Help"));
+    }
+  }
+  frame->SetMenuBar(menuBar);
+  frame->CreateStatusBar(1);
+  frame->SetStatusText(wxT("Welcome"));
+  frame->Show(true);
+  return true;
+}
+
+DECLARE_APP(MyApp)
+IMPLEMENT_APP(MyApp)
+....
+
+
+Scoping
+-------
+
+* The scoping appears similar to the written description
+* Create a wxWidgets program which
+  - Has a menubar
+    ** File Menu
+      *** Quit MenuItem
+         **** When clicked, should close the application
+    ** Help Menu
+      *** About MenuItem
+         **** When clicked, should display the number of times
+              this MenuItem was clicked
+
+GUI Example #3, lambdas
+-----------------------
+
+* The creation of those single-use functors is verbose
+* Back to the problem with goto statements, excessive names aren't desirable
+* Lambdas allow the creation of single use functors.

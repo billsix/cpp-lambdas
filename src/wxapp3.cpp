@@ -1,4 +1,5 @@
 #include "wx/wx.h"
+#include <memory>
 
 class MyApp : public wxApp
 {
@@ -7,17 +8,24 @@ public:
 };
 
 bool MyApp::OnInit(){
-  auto * frame = new wxFrame(nullptr,
-			     wxID_ANY,
-			     wxT("Minimal App"));
+  auto frame = new wxFrame(nullptr,
+                           wxID_ANY,
+                           wxT("Minimal App"));
 
-  auto * menuBar = new wxMenuBar();{
-    auto * fileMenu = new wxMenu();{
+
+  auto numberOfAboutClicks = std::make_shared<int>(0);
+
+  auto menuBar = new wxMenuBar();{
+    auto fileMenu = new wxMenu();{
       fileMenu->Append(wxID_EXIT,
 		       wxT("E&xit"),
 		       wxT("Quit"));
       frame->Bind(wxEVT_COMMAND_MENU_SELECTED,
-		  [frame](wxCommandEvent& event){
+		  [=](wxCommandEvent& event){
+                    std::cout << "About button clicked "
+                              << *numberOfAboutClicks
+                              << " times"
+                              << std::endl;
 		    frame->Close();
 		    delete frame;
 		  },
@@ -25,17 +33,16 @@ bool MyApp::OnInit(){
       menuBar->Append(fileMenu, wxT("&File"));
     }
     auto * helpMenu = new wxMenu();{
-      int numberOfAboutClicks = 0;
       helpMenu->Append(wxID_ABOUT,
 		       wxT("&About"),
 		       wxT("Show About Dialog"));
       frame->Bind(wxEVT_COMMAND_MENU_SELECTED,
-		  [frame,numberOfAboutClicks](wxCommandEvent& event) mutable{
-                    numberOfAboutClicks++;
+		  [=](wxCommandEvent& event) mutable{
+                    (*numberOfAboutClicks)++;
                     wxString msg;{
                       msg.Printf(wxT("Hello, welcome to %s, clicked %d times"),
                                  wxVERSION_STRING,
-                                 numberOfAboutClicks);
+                                 *numberOfAboutClicks);
                     }
 		    wxMessageBox(msg,
 				 wxT("About Minimal"),

@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 3.0)
 project(cpplambdas)
 
 
-
 set(wxWidgets_CONFIGURATION mswu)
+
+
 find_package(wxWidgets COMPONENTS core base REQUIRED)
 include(${wxWidgets_USE_FILE})
 
@@ -42,7 +43,7 @@ set(wxapp2_source
     ./wxapp2.cpp
 )
 
-add_executable(wxapp2 ${wxapp2_source})
+add_executable(wxapp2 WIN32 ${wxapp2_source})
 target_link_libraries(wxapp2 ${wxWidgets_LIBRARIES})
 
 set(wxapp3_source
@@ -50,7 +51,7 @@ set(wxapp3_source
 )
 
 add_executable(wxapp3 ${wxapp3_source})
-target_link_libraries(wxapp3 ${wxWidgets_LIBRARIES})
+target_link_libraries(wxapp3 WIN32 ${wxWidgets_LIBRARIES})
 
 
 

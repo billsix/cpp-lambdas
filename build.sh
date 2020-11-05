@@ -1,9 +1,8 @@
-export SOURCE_DIR=$(pwd)
-mkdir -p $(pwd)/../debug
+mkdir -p debug
 #Make an install directory
-mkdir -p $(pwd)/../debugInstall
-export INSTALL_DIR=$(pwd)/../debugInstall
+mkdir -p debugInstall
+export INSTALL_DIR=$(pwd)/debugInstall
 #Change to the build directory
-cd ../debug
-CFLAGS='-g -O0' cmake ../cpp-lambdas/
+cd debug
+CFLAGS='-g -O0' cmake ../
 cmake -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_DIR . && make all install

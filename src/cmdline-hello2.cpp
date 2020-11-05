@@ -1,19 +1,18 @@
+#include <functional>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <functional>
 
 #include "jump.h"
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char *argv[]) {
   // the number of lines entered
   int count = 0;
 
   // a buffer into which the read data will be stored
   char buf[1000];
 
- loopBegin:
+loopBegin:
   // get a line from the command line
   fgets(buf, 1000, stdin);
   // JE means JUMP-IF-EQUAL.
@@ -25,13 +24,13 @@ int main(int argc, char* argv[])
   // as usual, which means the instruction on the
   // next line is executed.
 
-  //increment the count
+  // increment the count
   count++;
   // print the count to the screen
   printf("Hit enter  %d times\n", count);
   // repeat until q is entered
   goto loopBegin;
 
- exit:
+exit:
   return 0;
 }

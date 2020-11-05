@@ -1,81 +1,62 @@
 #include "wx/wx.h"
 
-class MyApp : public wxApp
-{
+class MyApp : public wxApp {
 public:
   virtual bool OnInit();
 };
 
-
 // defer closing the frame
-class CloseFunctor
-{
+class CloseFunctor {
 public:
-  wxFrame * frame;
+  wxFrame *frame;
 
-  CloseFunctor(wxFrame *frame)
-  {
-    this->frame = frame;
-  }
+  CloseFunctor(wxFrame *frame) { this->frame = frame; }
 
-  void operator() (wxCommandEvent& event){
+  void operator()(wxCommandEvent &event) {
     frame->Close();
     delete frame;
   }
 };
 
 // defer uppdating the number of clicks
-class AboutFunctor
-{
+class AboutFunctor {
 public:
-  wxFrame * frame;
+  wxFrame *frame;
   int numberOfAboutClicks;
 
-  AboutFunctor(wxFrame *frame, int numberOfAboutClicks)
-  {
+  AboutFunctor(wxFrame *frame, int numberOfAboutClicks) {
     this->frame = frame;
     this->numberOfAboutClicks = numberOfAboutClicks;
   }
 
-  void operator() (wxCommandEvent& event){
+  void operator()(wxCommandEvent &event) {
     numberOfAboutClicks++;
-    wxString msg;{
+    wxString msg;
+    {
       msg.Printf(wxT("Hello, welcome to %s, clicked %d times"),
-                 wxVERSION_STRING,
-                 numberOfAboutClicks);
+                 wxVERSION_STRING, numberOfAboutClicks);
     }
-    wxMessageBox(msg,
-                 wxT("About Minimal"),
-                 wxOK | wxICON_INFORMATION,
-                 frame);
+    wxMessageBox(msg, wxT("About Minimal"), wxOK | wxICON_INFORMATION, frame);
   }
-
 };
 
+bool MyApp::OnInit() {
+  auto *frame = new wxFrame(nullptr, wxID_ANY, wxT("Minimal App"));
 
-bool MyApp::OnInit(){
-  auto * frame = new wxFrame(nullptr,
-			     wxID_ANY,
-			     wxT("Minimal App"));
-
-  auto * menuBar = new wxMenuBar();{
-    auto * fileMenu = new wxMenu();{
-      fileMenu->Append(wxID_EXIT,
-		       wxT("E&xit"),
-		       wxT("Quit"));
-      frame->Bind(wxEVT_COMMAND_MENU_SELECTED,
-                  CloseFunctor(frame),
-		  wxID_EXIT);
+  auto *menuBar = new wxMenuBar();
+  {
+    auto *fileMenu = new wxMenu();
+    {
+      fileMenu->Append(wxID_EXIT, wxT("E&xit"), wxT("Quit"));
+      frame->Bind(wxEVT_COMMAND_MENU_SELECTED, CloseFunctor(frame), wxID_EXIT);
       menuBar->Append(fileMenu, wxT("&File"));
     }
-    auto * helpMenu = new wxMenu();{
+    auto *helpMenu = new wxMenu();
+    {
       int numberOfAboutClicks = 0;
-      helpMenu->Append(wxID_ABOUT,
-		       wxT("&About"),
-		       wxT("Show About Dialog"));
+      helpMenu->Append(wxID_ABOUT, wxT("&About"), wxT("Show About Dialog"));
       frame->Bind(wxEVT_COMMAND_MENU_SELECTED,
-                  AboutFunctor(frame,numberOfAboutClicks),
-		  wxID_ABOUT);
+                  AboutFunctor(frame, numberOfAboutClicks), wxID_ABOUT);
       menuBar->Append(helpMenu, wxT("&Help"));
     }
   }

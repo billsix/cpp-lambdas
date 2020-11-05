@@ -1,53 +1,40 @@
 
 #include "wx/wx.h"
 
-
-class MyFrame: public wxFrame {
+class MyFrame : public wxFrame {
 public:
-  MyFrame(const wxString& title);
+  MyFrame(const wxString &title);
 
-  void OnQuit(wxCommandEvent& e);
-  void OnAbout(wxCommandEvent& e);
+  void OnQuit(wxCommandEvent &e);
+  void OnAbout(wxCommandEvent &e);
 
 private:
-
   int numberOfAboutClicks;
 
   DECLARE_EVENT_TABLE()
 };
 
-void MyFrame::OnAbout(wxCommandEvent& e){
+void MyFrame::OnAbout(wxCommandEvent &e) {
   numberOfAboutClicks++;
 
   wxString msg;
-  msg.Printf(wxT("Hello, welcome to %s, clicked %d times"),
-             wxVERSION_STRING,
+  msg.Printf(wxT("Hello, welcome to %s, clicked %d times"), wxVERSION_STRING,
              numberOfAboutClicks);
-  wxMessageBox(msg,
-	       wxT("About Minimal"),
-	       wxOK | wxICON_INFORMATION,
-	       this);
+  wxMessageBox(msg, wxT("About Minimal"), wxOK | wxICON_INFORMATION, this);
 }
 
-void MyFrame::OnQuit(wxCommandEvent& e){
-  Close();
-}
+void MyFrame::OnQuit(wxCommandEvent &e) { Close(); }
 
-MyFrame::MyFrame(const wxString& title)
-  :wxFrame(NULL, wxID_ANY, title){
+MyFrame::MyFrame(const wxString &title) : wxFrame(NULL, wxID_ANY, title) {
 
-  wxMenu * fileMenu = new wxMenu();
-  wxMenu * helpMenu = new wxMenu();
+  wxMenu *fileMenu = new wxMenu();
+  wxMenu *helpMenu = new wxMenu();
 
-  fileMenu->Append(wxID_EXIT,
-		   wxT("E&xit"),
-		   wxT("Quit"));
+  fileMenu->Append(wxID_EXIT, wxT("E&xit"), wxT("Quit"));
 
-  helpMenu->Append(wxID_ABOUT,
-		   wxT("&About"),
-		   wxT("Show About Dialog"));
+  helpMenu->Append(wxID_ABOUT, wxT("&About"), wxT("Show About Dialog"));
 
-  wxMenuBar * menuBar = new wxMenuBar();
+  wxMenuBar *menuBar = new wxMenuBar();
   menuBar->Append(fileMenu, wxT("&File"));
   menuBar->Append(helpMenu, wxT("&Help"));
 
@@ -56,27 +43,23 @@ MyFrame::MyFrame(const wxString& title)
   SetStatusText(wxT("Welcome"));
 
   numberOfAboutClicks = 0;
-
 }
 
 BEGIN_EVENT_TABLE(MyFrame, wxFrame)
-  EVT_MENU(wxID_ABOUT, MyFrame::OnAbout)
-  EVT_MENU(wxID_EXIT, MyFrame::OnQuit)
+EVT_MENU(wxID_ABOUT, MyFrame::OnAbout)
+EVT_MENU(wxID_EXIT, MyFrame::OnQuit)
 END_EVENT_TABLE()
 
-
-class MyApp : public wxApp
-{
+class MyApp : public wxApp {
 public:
   virtual bool OnInit();
 };
 
-bool MyApp::OnInit(){
-  MyFrame * frame = new MyFrame(wxT("Minimal App"));
+bool MyApp::OnInit() {
+  MyFrame *frame = new MyFrame(wxT("Minimal App"));
   frame->Show(true);
   return true;
 }
-
 
 DECLARE_APP(MyApp)
 IMPLEMENT_APP(MyApp)
